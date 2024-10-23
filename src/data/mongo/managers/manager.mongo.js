@@ -14,17 +14,34 @@ class mongoManager {
     }
   
     async readAll(filter) {
-      try {
-        if (filter) {
-          const allDocuments = await this.model.find(filter);
-          return allDocuments;
+        try {
+            let query = {};
+    
+
+            if (typeof filter === 'object') {
+                query = { ...filter }; 
+            } else if (typeof filter === 'string') {
+                query = { category: filter }; 
+            }
+    
+            console.log("Query:", query); 
+    
+            const allDocuments = await this.model.find(query);
+    
+            if (allDocuments.length === 0) {
+                throw new Error("No carts found with the provided filter.");
+            }
+    
+            return allDocuments;
+    
+        } catch (error) {
+            throw error;
         }
-        const allDocuments = await this.model.find();
-        return allDocuments;
-      } catch (error) {
-        throw error;
-      }
     }
+    
+    
+    
+      
   
     async read(id) {
       try {
@@ -35,10 +52,14 @@ class mongoManager {
       }
     }
   
-    async update(id, data) {
+    async update(id, data,) {
       try {
+        const opts = { new: true, runValidators: true };
         const document = await this.model.findByIdAndUpdate(id, data, opts);
-        return document;
+        const plainDocument = document.toObject();
+        console.log(plainDocument)
+        return plainDocument;
+
       } catch (error) {
         throw error;
       }
